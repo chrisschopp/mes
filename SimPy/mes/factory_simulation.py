@@ -11,16 +11,13 @@ def lot_counter():
 
 lot_id = lot_counter()
 
-process_time_dist = {
-                    'STEP A': 2,
-                    'STEP B': 3,
-                    'STEP C': 4
-                    }
-
-
 class GlobalVariables:
-    lot_status = pd.DataFrame(columns=['lot_id','step_name','step_arrival_time','process_start_time','process_end_time'])
-
+    lot_status = pd.DataFrame(columns=['lot_id', 'step_name', 'step_arrival_time', 'process_start_time', 'process_end_time'])
+    process_time_dist = [
+                            ['STEP A', 2],
+                            ['STEP B', 3],
+                            ['STEP C', 4]
+                        ]
 
 class Factory(object):
     def __init__(self, env, num_machines_ws1, num_machines_ws2, num_machines_ws3):
@@ -31,13 +28,13 @@ class Factory(object):
         self.ws3 = simpy.Resource(env, capacity=num_machines_ws3)
 
     def step_a(self, lot):
-        yield self.env.timeout(step_process_time_dist['STEP A'])
+        yield self.env.timeout(GlobalVariables.process_time_dist[0][1])
 
     def step_b(self, lot):
-        yield self.env.timeout(step_process_time_dist['STEP B'])
+        yield self.env.timeout(GlobalVariables.process_time_dist[1][1])
 
     def step_c(self, lot):
-        yield self.env.timeout(step_process_time_dist['STEP C'])
+        yield self.env.timeout(GlobalVariables.process_time_dist[2][1])
 
 
 def start_lot(env, lot, factory):
@@ -49,7 +46,7 @@ def start_lot(env, lot, factory):
     # The first step has a step_arrival_time of when the lot was created.
     GlobalVariables.lot_status = pd.concat([GlobalVariables.lot_status,
                                             pd.DataFrame({'lot_id': current_lot_id,
-                                                        'step_name': list(process_time_dist[0].keys())[0],
+                                                        'step_name': GlobalVariables.process_time_dist[0][0],
                                                         'step_arrival_time': env.now},
                                                         index=[current_lot_id])])
 
@@ -64,7 +61,7 @@ def start_lot(env, lot, factory):
     # ws2, step_b
     GlobalVariables.lot_status = pd.concat([GlobalVariables.lot_status,
                                             pd.DataFrame({'lot_id': current_lot_id,
-                                                        'step_name': list(process_time_dist[1].keys())[0],
+                                                        'step_name': GlobalVariables.process_time_dist[1][0],
                                                         'step_arrival_time': env.now},
                                                         index=[current_lot_id])])
 
@@ -79,7 +76,7 @@ def start_lot(env, lot, factory):
     # ws3, step_c
     GlobalVariables.lot_status = pd.concat([GlobalVariables.lot_status,
                                             pd.DataFrame({'lot_id': current_lot_id,
-                                                        'step_name': list(process_time_dist[2].keys())[0],
+                                                        'step_name': GlobalVariables.process_time_dist[2][0],
                                                         'step_arrival_time': env.now},
                                                         index=[current_lot_id])])
 
