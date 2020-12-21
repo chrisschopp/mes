@@ -3,12 +3,13 @@ import pandas as pd
 import simpy
 
 
-def lot_counter():
-    # Generator that assigns an incremental number to each lot, starting with lot_id = 1.
-    num = 1
+def _generate_lot_id():
+    '''Generator that assigns an incremental number to each lot, starting with lot_id = 1.
+    '''
+    lot_id = 1
     while True:
-        yield num
-        num += 1
+        yield lot_id
+        lot_id += 1
 
 
 class GlobalVars:
@@ -46,7 +47,7 @@ class Lot(object):
     '''Holds variables specific to each Lot instance as it flows through steps in the Factory.
     '''
     def __init__(self):
-        self.lot_id = next(lot_counter())
+        self.lot_id = next(_generate_lot_id())
         self.step_sequence_number = 0
 
 
