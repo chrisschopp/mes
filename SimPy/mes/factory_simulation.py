@@ -20,10 +20,13 @@ class GlobalVars:
                             ['STEP B', 2],
                             ['STEP C', 3]
                         ]
+    num_machines_at_ws = {'ws1': 1,
+                        'ws2': 1,
+                        'ws3': 1}
 
 
 class Factory(object):
-    '''Holds the SimPy Environment instance, workstation(s) (i.e., SimPy Resource), and step that at which each Lot will be processed.
+    '''Holds the workstation(s) (i.e., SimPy Resource) and step that at which each Lot will be processed.
     '''
     def __init__(self, env, num_machines_ws1, num_machines_ws2, num_machines_ws3):
         '''Constructor for initiating SimPy simulation environment.
@@ -53,7 +56,7 @@ def insert_datetime_for(env, lot, lot_event):
 
 def start_lot(env, lot, factory):
     lot.index = [len(GlobalVars.lot_status_df)]
-    # ws1, step_a
+    # ws1
     # The first step has a step_arrival_time of when the lot was created.
     GlobalVars.lot_status_df = pd.concat([GlobalVars.lot_status_df,
                                             pd.DataFrame(
@@ -65,7 +68,6 @@ def start_lot(env, lot, factory):
                                             ])
 
     with factory.ws1.request() as request:
-        # 1 is subtracted from the length of the lot_status DataFrame so that the datetimes are inserted into the correct, zero-indexed row.
         insert_datetime_for(env, lot, 'step_arrival_time') # The lot gets in queue for the first process.
         yield request
         insert_datetime_for(env, lot, 'process_start_time') # After yield, the lot begins the process.
@@ -78,8 +80,7 @@ def start_lot(env, lot, factory):
 
 def continue_lot(env, lot, factory):
     lot.index = [len(GlobalVars.lot_status_df)]
-    # ws1, step_a
-    # The first step has a step_arrival_time of when the lot was created.
+    # ws2
     GlobalVars.lot_status_df = pd.concat([GlobalVars.lot_status_df,
                                             pd.DataFrame(
                                                         {'lot_id': lot.lot_id,
@@ -90,7 +91,6 @@ def continue_lot(env, lot, factory):
                                             ])
 
     with factory.ws2.request() as request:
-        # 1 is subtracted from the length of the lot_status DataFrame so that the datetimes are inserted into the correct, zero-indexed row.
         insert_datetime_for(env, lot, 'step_arrival_time') # The lot gets in queue for the first process.
         yield request
         insert_datetime_for(env, lot, 'process_start_time') # After yield, the lot begins the process.
