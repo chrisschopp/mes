@@ -15,7 +15,7 @@ class GlobalVars:
     '''Holds variables needed by other classes.
     '''
     lot_status_df = pd.DataFrame(columns=['lot_id', 'step_name', 'step_arrival_time', 'process_start_time', 'process_end_time'])
-    process_time_dist = [
+    process_time = [
                             ['STEP A', 1],
                             ['STEP B', 2],
                             ['STEP C', 3],
@@ -37,7 +37,9 @@ class Factory(object):
         self.env = env
 
     def step(self, lot):
-        yield self.env.timeout(GlobalVars.process_time_dist[lot.step_sequence_number][1])
+        '''A Lot runs at a step for the amount of time set by process_time.
+        '''
+        yield self.env.timeout(GlobalVars.process_time[lot.step_sequence_number][1])
 
 
 class Lot(object):
@@ -64,7 +66,7 @@ def start_lot(env, lot, factory):
     GlobalVars.lot_status_df = pd.concat([GlobalVars.lot_status_df,
                                             pd.DataFrame(
                                                         {'lot_id': lot.lot_id,
-                                                        'step_name': GlobalVars.process_time_dist[lot.step_sequence_number][0],
+                                                        'step_name': GlobalVars.process_time[lot.step_sequence_number][0],
                                                         'step_arrival_time': env.now},
                                                         index=lot.index
                                                         )
@@ -87,7 +89,7 @@ def continue_lot(env, lot, factory):
     GlobalVars.lot_status_df = pd.concat([GlobalVars.lot_status_df,
                                             pd.DataFrame(
                                                         {'lot_id': lot.lot_id,
-                                                        'step_name': GlobalVars.process_time_dist[lot.step_sequence_number][0],
+                                                        'step_name': GlobalVars.process_time[lot.step_sequence_number][0],
                                                         'step_arrival_time': env.now},
                                                         index=lot.index
                                                         )
@@ -109,7 +111,9 @@ def run_factory(env, lots_ready_at_time_zero=3, interarrival_time=2):
 
     # Sets num_machines_at_ws dynamically.
     for ws in GlobalVars.num_machines_at_ws:
-        setattr(Factory, list(ws.keys())[0], simpy.Resource(env, capacity=list(ws.values())[0]))
+        ws_name = list(ws.keys())[0]
+        num_machines_in_ws = simpy.Resource(env, capacity=list(ws.values())[0])
+        setattr(Factory, ws_name, num_machines_in_ws)
 
     # The factory starts with some number of lots ready to start processing at the first step.
     for _ in range(lots_ready_at_time_zero):
@@ -118,7 +122,7 @@ def run_factory(env, lots_ready_at_time_zero=3, interarrival_time=2):
     # The factory receives new lots according the the interarrival_time.
     while True:
         yield env.timeout(interarrival_time)
-        env.process(start_lot(env, Lot(), factory)) # After yield, a new Lot arrives at the Factory.
+        env.process(start_lot(env, Lot(), factory)) # After yield, a new Lot arrives at the factory.
 
 def get_lot_status_df():
     return GlobalVars.lot_status_df
