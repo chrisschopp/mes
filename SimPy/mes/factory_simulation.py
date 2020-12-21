@@ -18,7 +18,8 @@ class GlobalVars:
     process_time_dist = [
                             ['STEP A', 1],
                             ['STEP B', 2],
-                            ['STEP C', 3]
+                            ['STEP C', 3],
+                            ['STEP D', 4]
                         ]
     num_machines_at_ws = [
                             {'ws1': 1},
@@ -48,7 +49,10 @@ class Lot(object):
 
 
 def insert_datetime_for(env, lot, lot_event):
-    '''Inserts datetimes for 'step_arrival_time', 'process_start_time', and 'process_end_time' into the lot_status_df.
+    '''Inserts event datetimes into the lot_status_df.
+    
+    Examples of events would be 'step_arrival_time',
+    'process_start_time', and 'process_end_time'.
     '''
     GlobalVars.lot_status_df.at[lot.index, str(lot_event)] = env.now
 
@@ -108,15 +112,13 @@ def run_factory(env, lots_ready_at_time_zero=3, interarrival_time=2):
         setattr(Factory, list(ws.keys())[0], simpy.Resource(env, capacity=list(ws.values())[0]))
 
     # The factory starts with some number of lots ready to start processing at the first step.
-    for lot in range(lots_ready_at_time_zero):
+    for _ in range(lots_ready_at_time_zero):
         env.process(start_lot(env, Lot(), factory))
 
     # The factory receives new lots according the the interarrival_time.
     while True:
         yield env.timeout(interarrival_time)
-
-        lot += 1
-        env.process(start_lot(env, Lot(), factory))
+        env.process(start_lot(env, Lot(), factory)) # After yield, a new Lot arrives at the Factory.
 
 def get_lot_status_df():
     return GlobalVars.lot_status_df
