@@ -3,15 +3,6 @@ import pandas as pd
 import simpy
 
 
-def _generate_lot_id():
-    '''Generator that assigns an incremental number to each lot, starting with lot_id = 1.
-    '''
-    lot_id = 1
-    while True:
-        yield lot_id
-        lot_id += 1
-
-
 class GlobalVars:
     '''Holds variables needed by other classes.
     '''
@@ -42,6 +33,14 @@ class Factory(object):
         '''
         yield self.env.timeout(GlobalVars.process_time[lot.step_sequence_number][1])
 
+
+def _generate_lot_id():
+    '''Generator that assigns an incremental number to each lot, starting with lot_id = 1.
+    '''
+    lot_id = 1
+    while True:
+        yield lot_id
+        lot_id += 1
 
 class Lot(object):
     '''Holds variables specific to each Lot instance as it flows through steps in the Factory.
