@@ -29,21 +29,15 @@ class Factory(object):
         self.ws2 = simpy.Resource(env, capacity=num_machines_ws2)
         self.ws3 = simpy.Resource(env, capacity=num_machines_ws3)
 
-    def step_a(self, lot):
-        yield self.env.timeout(GlobalVars.process_time_dist[0][1])
-
-    def step_b(self, lot):
-        yield self.env.timeout(GlobalVars.process_time_dist[1][1])
-
-    def step_c(self, lot):
-        yield self.env.timeout(GlobalVars.process_time_dist[2][1])
+    def step(self, lot):
+        yield self.env.timeout(GlobalVars.process_time_dist[lot.step_sequence_number][1])
 
 
 class Lot(object):
     def __init__(self):
         '''Constructor for initiating lot.'''
         self.lot_id = next(lot_counter())
-        self.step_sequence_number = 1
+        self.step_sequence_number = 0
 
 
 def insert_datetime_for(env, lot, lot_event):
@@ -54,11 +48,10 @@ def start_lot(env, lot, factory):
     lot.index = [len(GlobalVars.lot_status)]
     # ws1, step_a
     # The first step has a step_arrival_time of when the lot was created.
-    # 1 is subtracted from step_sequence_number to align with zero indexed list.
     GlobalVars.lot_status = pd.concat([GlobalVars.lot_status,
                                             pd.DataFrame(
                                                         {'lot_id': lot.lot_id,
-                                                        'step_name': GlobalVars.process_time_dist[lot.step_sequence_number - 1][0],
+                                                        'step_name': GlobalVars.process_time_dist[lot.step_sequence_number][0],
                                                         'step_arrival_time': env.now},
                                                         index=lot.index
                                                         )
@@ -69,7 +62,7 @@ def start_lot(env, lot, factory):
         insert_datetime_for(env, lot, 'step_arrival_time') # The lot gets in queue for the first process.
         yield request
         insert_datetime_for(env, lot, 'process_start_time') # After yield, the lot begins the process.
-        yield env.process(factory.step_a(lot))
+        yield env.process(factory.step(lot))
         insert_datetime_for(env, lot, 'process_end_time') # After yield, the lot has finished processing.
 
     lot.step_sequence_number += 1
@@ -78,19 +71,27 @@ def start_lot(env, lot, factory):
 
 def continue_lot(env, lot, factory):
     lot.index = [len(GlobalVars.lot_status)]
-    # ws2, step_b
+    # ws1, step_a
+    # The first step has a step_arrival_time of when the lot was created.
     GlobalVars.lot_status = pd.concat([GlobalVars.lot_status,
-                                            pd.DataFrame({'lot_id': lot.lot_id,
-                                                        'step_name': GlobalVars.process_time_dist[lot.step_sequence_number - 1][0],
+                                            pd.DataFrame(
+                                                        {'lot_id': lot.lot_id,
+                                                        'step_name': GlobalVars.process_time_dist[lot.step_sequence_number][0],
                                                         'step_arrival_time': env.now},
-                                                        index=[len(GlobalVars.lot_status)])])
+                                                        index=lot.index
+                                                        )
+                                            ])
 
     with factory.ws2.request() as request:
-        GlobalVars.lot_status.at[lot.index, 'step_arrival_time'] = env.now # The lot gets in queue for the first process.
+        # 1 is subtracted from the length of the lot_status DataFrame so that the datetimes are inserted into the correct, zero-indexed row.
+        insert_datetime_for(env, lot, 'step_arrival_time') # The lot gets in queue for the first process.
         yield request
-        GlobalVars.lot_status.at[lot.index, 'process_start_time'] = env.now # After yield, the lot begins the process.
-        yield env.process(factory.step_b(lot))
-        GlobalVars.lot_status.at[lot.index, 'process_end_time'] = env.now # After yield, the lot has finished processing.
+        insert_datetime_for(env, lot, 'process_start_time') # After yield, the lot begins the process.
+        yield env.process(factory.step(lot))
+        insert_datetime_for(env, lot, 'process_end_time') # After yield, the lot has finished processing.
+
+    lot.step_sequence_number += 1
+    env.process(continue_lot(env, lot, factory))
 
 
 def run_factory(env, num_machines_ws1=1, num_machines_ws2=1, num_machines_ws3=1, lots_ready_at_time_zero=3, interarrival_time=2):
