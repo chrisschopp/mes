@@ -20,11 +20,11 @@ class GlobalVars:
                             ['STEP B', 2],
                             ['STEP C', 3]
                         ]
-    num_machines_at_ws = {
-                            'ws1': 1,
-                            'ws2': 1,
-                            'ws3': 1
-                        }
+    num_machines_at_ws = [
+                            {'ws1': 1},
+                            {'ws2': 1},
+                            {'ws3': 1}
+                        ]
 
 
 class Factory(object):
@@ -34,9 +34,6 @@ class Factory(object):
         '''Constructor for initiating SimPy simulation environment.
         '''
         self.env = env
-        self.ws1 = simpy.Resource(env, capacity=GlobalVars.num_machines_at_ws['ws1'])
-        self.ws2 = simpy.Resource(env, capacity=GlobalVars.num_machines_at_ws['ws2'])
-        self.ws3 = simpy.Resource(env, capacity=GlobalVars.num_machines_at_ws['ws3'])
 
     def step(self, lot):
         yield self.env.timeout(GlobalVars.process_time_dist[lot.step_sequence_number][1])
@@ -105,6 +102,10 @@ def continue_lot(env, lot, factory):
 
 def run_factory(env, lots_ready_at_time_zero=3, interarrival_time=2):
     factory = Factory(env)
+
+    # Sets num_machines_at_ws dynamically.
+    for ws in GlobalVars.num_machines_at_ws:
+        setattr(Factory, list(ws.keys())[0], simpy.Resource(env, capacity=list(ws.values())[0]))
 
     # The factory starts with some number of lots ready to start processing at the first step.
     for lot in range(lots_ready_at_time_zero):
