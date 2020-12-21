@@ -103,6 +103,50 @@ def continue_lot(env, lot, factory):
         insert_datetime_for(env, lot, 'process_end_time') # After yield, the lot has finished processing.
 
     lot.step_sequence_number += 1
+    env.process(continue_lot2(env, lot, factory))
+
+def continue_lot2(env, lot, factory):
+    lot.index = [len(GlobalVars.lot_status_df)]
+    # ws3
+    GlobalVars.lot_status_df = pd.concat([GlobalVars.lot_status_df,
+                                            pd.DataFrame(
+                                                        {'lot_id': lot.lot_id,
+                                                        'step_name': GlobalVars.process_time[lot.step_sequence_number][0],
+                                                        'step_arrival_time': env.now},
+                                                        index=lot.index
+                                                        )
+                                            ])
+
+    with factory.ws3.request() as request:
+        insert_datetime_for(env, lot, 'step_arrival_time') # The lot gets in queue for the first process.
+        yield request
+        insert_datetime_for(env, lot, 'process_start_time') # After yield, the lot begins the process.
+        yield env.process(factory.step(lot))
+        insert_datetime_for(env, lot, 'process_end_time') # After yield, the lot has finished processing.
+
+    lot.step_sequence_number += 1
+    env.process(continue_lot3(env, lot, factory))
+
+def continue_lot3(env, lot, factory):
+    # Last step does not increment lot.step_sequence_number at the end.
+    lot.index = [len(GlobalVars.lot_status_df)]
+    # ws3
+    GlobalVars.lot_status_df = pd.concat([GlobalVars.lot_status_df,
+                                            pd.DataFrame(
+                                                        {'lot_id': lot.lot_id,
+                                                        'step_name': GlobalVars.process_time[lot.step_sequence_number][0],
+                                                        'step_arrival_time': env.now},
+                                                        index=lot.index
+                                                        )
+                                            ])
+
+    with factory.ws3.request() as request:
+        insert_datetime_for(env, lot, 'step_arrival_time') # The lot gets in queue for the first process.
+        yield request
+        insert_datetime_for(env, lot, 'process_start_time') # After yield, the lot begins the process.
+        yield env.process(factory.step(lot))
+        insert_datetime_for(env, lot, 'process_end_time') # After yield, the lot has finished processing.
+
     env.process(continue_lot(env, lot, factory))
 
 
