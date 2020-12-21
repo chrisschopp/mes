@@ -14,7 +14,7 @@ def lot_counter():
 class GlobalVars:
     '''Holds variables needed by other classes.
     '''
-    lot_status = pd.DataFrame(columns=['lot_id', 'step_name', 'step_arrival_time', 'process_start_time', 'process_end_time'])
+    lot_status_df = pd.DataFrame(columns=['lot_id', 'step_name', 'step_arrival_time', 'process_start_time', 'process_end_time'])
     process_time_dist = [
                             ['STEP A', 1],
                             ['STEP B', 2],
@@ -42,14 +42,16 @@ class Lot(object):
 
 
 def insert_datetime_for(env, lot, lot_event):
-    GlobalVars.lot_status.at[lot.index, str(lot_event)] = env.now
+    '''Inserts datetimes for 'step_arrival_time', 'process_start_time', and 'process_end_time' into the lot_status_df.
+    '''
+    GlobalVars.lot_status_df.at[lot.index, str(lot_event)] = env.now
 
 
 def start_lot(env, lot, factory):
-    lot.index = [len(GlobalVars.lot_status)]
+    lot.index = [len(GlobalVars.lot_status_df)]
     # ws1, step_a
     # The first step has a step_arrival_time of when the lot was created.
-    GlobalVars.lot_status = pd.concat([GlobalVars.lot_status,
+    GlobalVars.lot_status_df = pd.concat([GlobalVars.lot_status_df,
                                             pd.DataFrame(
                                                         {'lot_id': lot.lot_id,
                                                         'step_name': GlobalVars.process_time_dist[lot.step_sequence_number][0],
@@ -71,10 +73,10 @@ def start_lot(env, lot, factory):
 
 
 def continue_lot(env, lot, factory):
-    lot.index = [len(GlobalVars.lot_status)]
+    lot.index = [len(GlobalVars.lot_status_df)]
     # ws1, step_a
     # The first step has a step_arrival_time of when the lot was created.
-    GlobalVars.lot_status = pd.concat([GlobalVars.lot_status,
+    GlobalVars.lot_status_df = pd.concat([GlobalVars.lot_status_df,
                                             pd.DataFrame(
                                                         {'lot_id': lot.lot_id,
                                                         'step_name': GlobalVars.process_time_dist[lot.step_sequence_number][0],
@@ -110,4 +112,4 @@ def run_factory(env, num_machines_ws1=1, num_machines_ws2=1, num_machines_ws3=1,
         env.process(start_lot(env, Lot(), factory))
 
 def get_lot_status_df():
-    return GlobalVars.lot_status
+    return GlobalVars.lot_status_df
