@@ -1,6 +1,7 @@
-import simpy
 import random
 import pandas as pd
+import simpy
+
 
 def lot_counter():
     # Generator that assigns an incremental number to each lot, starting with lot_id = 1.
