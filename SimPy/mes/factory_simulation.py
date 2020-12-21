@@ -23,8 +23,11 @@ class GlobalVars:
 
 
 class Factory(object):
+    '''Holds the SimPy Environment instance, workstation(s) (i.e., SimPy Resource), and step that at which each Lot will be processed.
+    '''
     def __init__(self, env, num_machines_ws1, num_machines_ws2, num_machines_ws3):
-        '''Constructor for initiating SimPy simulation environment.'''
+        '''Constructor for initiating SimPy simulation environment.
+        '''
         self.env = env
         self.ws1 = simpy.Resource(env, capacity=num_machines_ws1)
         self.ws2 = simpy.Resource(env, capacity=num_machines_ws2)
@@ -35,8 +38,9 @@ class Factory(object):
 
 
 class Lot(object):
+    '''Holds variables specific to each Lot instance as it flows through steps in the Factory.
+    '''
     def __init__(self):
-        '''Constructor for initiating lot.'''
         self.lot_id = next(lot_counter())
         self.step_sequence_number = 0
 
