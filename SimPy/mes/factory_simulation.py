@@ -46,11 +46,23 @@ class GlobalVars:
         ]
     )
 
-    step_process_time = [
-        ["STEP A", sample_from_gamma_distribution(shape=4, scale=1.0)],
-        ["STEP B", sample_from_gamma_distribution(shape=4, scale=0.5)],
-        ["STEP C", sample_from_gamma_distribution(shape=4, scale=2.0)],
-        ["STEP D", sample_from_gamma_distribution(shape=4, scale=0.7)],
+    step_list = [
+        {
+            "step_name": "STEP A",
+            "process_time": sample_from_gamma_distribution(shape=4, scale=1.0),
+        },
+        {
+            "step_name": "STEP B",
+            "process_time": sample_from_gamma_distribution(shape=4, scale=0.5),
+        },
+        {
+            "step_name": "STEP C",
+            "process_time": sample_from_gamma_distribution(shape=4, scale=2.0),
+        },
+        {
+            "step_name": "STEP D",
+            "process_time": sample_from_gamma_distribution(shape=4, scale=0.7),
+        },
     ]
 
     num_machines_at_ws = [{"ws1": 2}, {"ws2": 4}, {"ws3": 4}]
@@ -70,7 +82,7 @@ class Factory(object):
         """A Lot runs at a step for the amount of time set in process_time.
         """
         yield self.env.timeout(
-            next(GlobalVars.step_process_time[lot.step_sequence_number][1])
+            next(GlobalVars.step_list[lot.step_sequence_number]["process_time"])
         )
 
 
@@ -103,7 +115,9 @@ def start_lot(env, lot, factory):
             pd.DataFrame(
                 {
                     "lot_id": lot.lot_id,
-                    "step_name": GlobalVars.step_process_time[lot.step_sequence_number][0],
+                    "step_name": GlobalVars.step_list[lot.step_sequence_number][
+                        "step_name"
+                    ],
                     "step_arrival_time": env.now,
                 },
                 index=lot.index,
@@ -134,7 +148,9 @@ def lot_at_step_b(env, lot, factory):
             pd.DataFrame(
                 {
                     "lot_id": lot.lot_id,
-                    "step_name": GlobalVars.step_process_time[lot.step_sequence_number][0],
+                    "step_name": GlobalVars.step_list[lot.step_sequence_number][
+                        "step_name"
+                    ],
                     "step_arrival_time": env.now,
                 },
                 index=lot.index,
@@ -165,7 +181,9 @@ def lot_at_step_c(env, lot, factory):
             pd.DataFrame(
                 {
                     "lot_id": lot.lot_id,
-                    "step_name": GlobalVars.step_process_time[lot.step_sequence_number][0],
+                    "step_name": GlobalVars.step_list[lot.step_sequence_number][
+                        "step_name"
+                    ],
                     "step_arrival_time": env.now,
                 },
                 index=lot.index,
@@ -197,7 +215,9 @@ def lot_at_step_d(env, lot, factory):
             pd.DataFrame(
                 {
                     "lot_id": lot.lot_id,
-                    "step_name": GlobalVars.step_process_time[lot.step_sequence_number][0],
+                    "step_name": GlobalVars.step_list[lot.step_sequence_number][
+                        "step_name"
+                    ],
                     "step_arrival_time": env.now,
                 },
                 index=lot.index,
