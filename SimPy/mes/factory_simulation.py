@@ -27,7 +27,7 @@ def _generate_interarrival_time(scale):
         yield np.random.exponential(scale)
 
 
-def sample_from_gamma_distribution(shape, scale):
+def _sample_from_gamma_distribution(shape, scale):
     while True:
         yield np.random.default_rng().gamma(shape, scale)
 
@@ -49,19 +49,19 @@ class GlobalVars:
     step_list = [
         {
             "step_name": "STEP A",
-            "process_time": sample_from_gamma_distribution(shape=4, scale=1.0),
+            "process_time": _sample_from_gamma_distribution(shape=4, scale=1.0),
         },
         {
             "step_name": "STEP B",
-            "process_time": sample_from_gamma_distribution(shape=4, scale=0.5),
+            "process_time": _sample_from_gamma_distribution(shape=4, scale=0.5),
         },
         {
             "step_name": "STEP C",
-            "process_time": sample_from_gamma_distribution(shape=4, scale=2.0),
+            "process_time": _sample_from_gamma_distribution(shape=4, scale=2.0),
         },
         {
             "step_name": "STEP D",
-            "process_time": sample_from_gamma_distribution(shape=4, scale=0.7),
+            "process_time": _sample_from_gamma_distribution(shape=4, scale=0.7),
         },
     ]
 
