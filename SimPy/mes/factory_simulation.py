@@ -124,5 +124,30 @@ def run_factory(env, lots_ready_at_time_zero=3, interarrival_time=2):
         yield env.timeout(interarrival_time)
         env.process(start_lot(env, Lot(), factory)) # After yield, a new Lot arrives at the factory.
 
-def get_lot_status_df():
-    return GlobalVars.lot_status_df
+def get_lot_status_df(simulation_start_time):
+    """Returns DataFrames of mes.hist and mes.current.
+
+    Return value is a namedtuple.
+    """
+
+    from collections import namedtuple
+
+    mes_data = GlobalVars.lot_status_df
+    year, month, day = simulation_start_time
+
+    # Convert simulation minutes to datetimes starting at simulation_start_time.
+    # Converts unit time to hours so we have a longer time period
+    simulation_start_time = pd.Timestamp(year=year, month=month, day=day)
+    for event in ['step_arrival_time','process_start_time','process_end_time']:
+        mes_data[event] = simulation_start_time + pd.TimedeltaIndex(mes_data[event], unit='h').to_pytimedelta()
+
+    MES = namedtuple("mes", ["hist","current"])
+    mes = MES(mes_data[~mes_data['process_end_time'].isna()].copy(),
+            mes_data[mes_data['process_end_time'].isna()].copy())
+
+    mes.hist["queue_time_hours"] = (mes.hist["process_start_time"] - mes.hist["step_arrival_time"]) / pd.Timedelta(hours=1)
+    mes.hist["process_time_hours"] = (mes.hist["process_end_time"] - mes.hist["process_start_time"]) / pd.Timedelta(hours=1)
+    mes.hist["step_cycle_time_hours"] = (mes.hist["process_end_time"] - mes.hist["step_arrival_time"]) / pd.Timedelta(hours=1)
+
+    return mes
+
