@@ -152,7 +152,7 @@ def run_factory(env, lots_ready_at_time_zero=3, interarrival_time=2):
         )  # After yield, a new Lot arrives at the factory.
 
 
-def get_lot_status_df(simulation_start_time):
+def create_mes_data(simulation_start_time):
     """Returns DataFrames of mes.hist and mes.current.
 
     Return value is a namedtuple.
