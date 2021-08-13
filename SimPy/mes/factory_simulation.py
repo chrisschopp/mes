@@ -153,11 +153,12 @@ def run_factory(env, lots_ready_at_time_zero=3, interarrival_time=2):
 
 
 def create_mes_data(simulation_start_time):
-    """Returns DataFrames of mes.hist and mes.current.
+    """Creates a namedtuple storing mes data from the simulation. 
 
-    Return value is a namedtuple.
+    Returns:
+        mes: namedtuple with attributes for mes.hist and mes.current.
     """
-
+    
     from collections import namedtuple
 
     mes_data = GlobalVars.lot_status_df
