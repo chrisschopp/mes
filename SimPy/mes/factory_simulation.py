@@ -3,6 +3,15 @@ import pandas as pd
 import simpy
 
 
+def _generate_lot_id():
+    """Generator that assigns an incremental number to each lot, starting with lot_id = 1.
+    """
+    lot_id = 1
+    while True:
+        yield lot_id
+        lot_id += 1
+
+
 class GlobalVars:
     """Holds variables needed by other classes.
     """
@@ -16,8 +25,14 @@ class GlobalVars:
             "process_end_time",
         ]
     )
+
+    lot_id = _generate_lot_id()
+
     process_time = [["STEP A", 1], ["STEP B", 2], ["STEP C", 3], ["STEP D", 4]]
     num_machines_at_ws = [{"ws1": 1}, {"ws2": 1}, {"ws3": 1}]
+
+    # List of steps is set dynamically from process_time
+    steps = [step[0] for step in process_time]
 
 
 class Factory(object):
@@ -35,21 +50,12 @@ class Factory(object):
         yield self.env.timeout(GlobalVars.process_time[lot.step_sequence_number][1])
 
 
-def _generate_lot_id():
-    """Generator that assigns an incremental number to each lot, starting with lot_id = 1.
-    """
-    lot_id = 1
-    while True:
-        yield lot_id
-        lot_id += 1
-
-
 class Lot(object):
     """Holds variables specific to each Lot instance as it flows through steps in the Factory.
     """
 
     def __init__(self):
-        self.lot_id = next(_generate_lot_id())
+        self.lot_id = next(GlobalVars.lot_id)
         self.step_sequence_number = 0
 
 
@@ -158,7 +164,7 @@ def create_mes_data(simulation_start_time):
     Returns:
         mes: namedtuple with attributes for mes.hist and mes.current.
     """
-    
+
     from collections import namedtuple
 
     mes_data = GlobalVars.lot_status_df
