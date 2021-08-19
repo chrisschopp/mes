@@ -167,16 +167,15 @@ def create_mes_data(simulation_start_time):
 
     from collections import namedtuple
 
-    mes_data = GlobalVars.lot_status_df
+    mes_data = GlobalVars.lot_status_df.copy()
     year, month, day = simulation_start_time
 
     # Convert simulation minutes to datetimes starting at simulation_start_time.
     # Converts unit time to hours so we have a longer time period
     simulation_start_time = pd.Timestamp(year=year, month=month, day=day)
     for event in ["step_arrival_time", "process_start_time", "process_end_time"]:
-        mes_data[event] = (
-            simulation_start_time
-            + pd.TimedeltaIndex(mes_data[event], unit="h").to_pytimedelta()
+        mes_data[event] = simulation_start_time + pd.to_timedelta(
+            mes_data[event], unit="h"
         )
 
     MES = namedtuple("mes", ["hist", "current"])
