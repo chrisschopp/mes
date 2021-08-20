@@ -157,6 +157,21 @@ def run_factory(env, lots_ready_at_time_zero=3, interarrival_time=2):
         )  # After yield, a new Lot arrives at the factory.
 
 
+def get_cycle_time_hours(df):
+    """Returns a DataFrame of 
+    """
+    first_step = df[df["step_name"]==GlobalVars.steps[0]]
+    last_step = df[df["step_name"]==GlobalVars.steps[-1]]
+    
+    merged = first_step.merge(last_step,
+                    left_on="lot_id",
+                    right_on="lot_id",
+                    suffixes=["_first","_last"])
+    merged["cycle_time_hours"] = (merged["process_end_time_last"] - merged["step_arrival_time_first"])  / pd.Timedelta(hours=1)
+
+    return merged[["lot_id","cycle_time_hours"]]
+
+
 def create_mes_data(simulation_start_time):
     """Creates a namedtuple storing mes data from the simulation. 
 
@@ -177,10 +192,11 @@ def create_mes_data(simulation_start_time):
             mes_data[event], unit="h"
         )
 
-    MES = namedtuple("mes", ["hist", "current"])
+    MES = namedtuple("mes", ["hist", "current", "cycle_time"])
     mes = MES(
         mes_data[~mes_data["process_end_time"].isna()].copy(),
         mes_data[mes_data["process_end_time"].isna()].copy(),
+        get_cycle_time_hours(mes_data[~mes_data["process_end_time"].isna()].copy()),
     )
 
     mes.hist["queue_time_hours"] = (
