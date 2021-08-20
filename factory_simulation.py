@@ -27,7 +27,12 @@ class GlobalVars:
 
     lot_id = _generate_lot_id()
 
-    process_time = [["STEP A", 1], ["STEP B", 2], ["STEP C", 3], ["STEP D", 4]]
+    process_time = [
+        ["STEP A", _sample_from_gamma_distribution(shape=4, scale=1.0)],
+        ["STEP B", _sample_from_gamma_distribution(shape=4, scale=0.5)],
+        ["STEP C", _sample_from_gamma_distribution(shape=4, scale=2.0)],
+        ["STEP D", _sample_from_gamma_distribution(shape=4, scale=0.7)],
+    ]
     num_machines_at_ws = [{"ws1": 1}, {"ws2": 1}, {"ws3": 1}]
 
     # List of steps is set dynamically from process_time
@@ -160,16 +165,17 @@ def run_factory(env, lots_ready_at_time_zero=3, interarrival_time=2):
 def get_cycle_time_hours(df):
     """Returns a DataFrame of 
     """
-    first_step = df[df["step_name"]==GlobalVars.steps[0]]
-    last_step = df[df["step_name"]==GlobalVars.steps[-1]]
-    
-    merged = first_step.merge(last_step,
-                    left_on="lot_id",
-                    right_on="lot_id",
-                    suffixes=["_first","_last"])
-    merged["cycle_time_hours"] = (merged["process_end_time_last"] - merged["step_arrival_time_first"])  / pd.Timedelta(hours=1)
+    first_step = df[df["step_name"] == GlobalVars.steps[0]]
+    last_step = df[df["step_name"] == GlobalVars.steps[-1]]
 
-    return merged[["lot_id","cycle_time_hours"]]
+    merged = first_step.merge(
+        last_step, left_on="lot_id", right_on="lot_id", suffixes=["_first", "_last"]
+    )
+    merged["cycle_time_hours"] = (
+        merged["process_end_time_last"] - merged["step_arrival_time_first"]
+    ) / pd.Timedelta(hours=1)
+
+    return merged[["lot_id", "cycle_time_hours"]]
 
 
 def create_mes_data(simulation_start_time):
