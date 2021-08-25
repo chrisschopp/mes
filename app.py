@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 import plotly.express as px
+import urllib
 
 from factory_simulation import *
 
@@ -18,7 +19,7 @@ def main():
         "Choose app mode", ["Introduction", "📄 MES history", "📄 MES current state", "📊 Process Time"],
     )
     if app_mode == "Introduction":
-        st.write(welcome_message())
+        welcome_message = st.markdown(get_file_content_as_string("welcome_message.md"))
         st.sidebar.success("Select an option above.")
     elif app_mode == "📄 MES history":
         st.write(mes.hist)
@@ -59,19 +60,11 @@ def load_simulation(
     env.run(until=50)
 
 
-def welcome_message():
-    text = """
-    # Factory Simulation
-
-    This interactive [Streamlit](https://streamlit.io/) web app uses the discrete event simulation framework [SimPy](https://simpy.readthedocs.io/en/latest/).
-    
-    The output of this simulation is similar to that produced by a [Manufacturing Execution System](https://en.wikipedia.org/wiki/Manufacturing_execution_system) (MES).
-    
-    An MES is foundational to smart manufacturing, allowing Industry 4.0 practitioners to monitor factory performance in real-time. Effective use of this data can reduce costs and improve performance to customer demand.
-    
-    Analysis of factory performance can be done with the MES-like data produced by this simulation, much as would be done with data produced by real factory automation.
-    """
-    return text
+@st.cache(show_spinner=False)
+def get_file_content_as_string(path):
+    url = 'https://raw.githubusercontent.com/chrisschopp/mes/master/' + path
+    response = urllib.request.urlopen(url)
+    return response.read().decode("utf-8")
 
 
 if __name__ == "__main__":
