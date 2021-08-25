@@ -16,7 +16,8 @@ def main():
 
     st.sidebar.title("Navigation")
     app_mode = st.sidebar.selectbox(
-        "Choose app mode", ["Introduction", "📄 MES history", "📄 MES current state", "📊 Process Time"],
+        "Choose app mode",
+        ["Introduction", "📄 MES history", "📄 MES current state", "📊 Process Time"],
     )
     if app_mode == "Introduction":
         welcome_message = st.markdown(get_file_content_as_string("welcome_message.md"))
@@ -26,10 +27,15 @@ def main():
     elif app_mode == "📄 MES current state":
         st.write(mes.current)
     elif app_mode == "📊 Process Time":
-        fig = px.histogram(mes.hist, x="process_time_hours", y="process_time_hours", color="step_name",
-                   marginal="box", # or violin, rug
-                   hover_data=mes.hist.columns,
-                   title="Process Time Distribution by Step")
+        fig = px.histogram(
+            mes.hist,
+            x="process_time_hours",
+            y="process_time_hours",
+            color="step_name",
+            marginal="box",  # or violin, rug
+            hover_data=mes.hist.columns,
+            title="Process Time Distribution by Step",
+        )
         st.plotly_chart(fig)
 
 
@@ -62,7 +68,7 @@ def load_simulation(
 
 @st.cache(show_spinner=False)
 def get_file_content_as_string(path):
-    url = 'https://raw.githubusercontent.com/chrisschopp/mes/master/' + path
+    url = "https://raw.githubusercontent.com/chrisschopp/mes/master/" + path
     response = urllib.request.urlopen(url)
     return response.read().decode("utf-8")
 
