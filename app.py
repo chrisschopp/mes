@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import streamlit as st
+import plotly.express as px
 
 from factory_simulation import *
 
@@ -12,17 +13,23 @@ def main():
     # Notify the reader that the data was successfully loaded.
     data_load_state.text("Running simulation...done.")
 
-    st.sidebar.title("Factory Simulation")
+    st.sidebar.title("Navigation")
     app_mode = st.sidebar.selectbox(
-        "Choose the app mode", ["Instructions", "📄 MES history", "📄 MES current state"],
+        "Choose app mode", ["Introduction", "📄 MES history", "📄 MES current state", "📊 Process Time"],
     )
-    if app_mode == "Instructions":
+    if app_mode == "Introduction":
         st.write(welcome_message())
         st.sidebar.success("Select an option above.")
     elif app_mode == "📄 MES history":
         st.write(mes.hist)
     elif app_mode == "📄 MES current state":
         st.write(mes.current)
+    elif app_mode == "📊 Process Time":
+        fig = px.histogram(mes.hist, x="process_time_hours", y="process_time_hours", color="step_name",
+                   marginal="box", # or violin, rug
+                   hover_data=mes.hist.columns,
+                   title="Process Time Distribution by Step")
+        st.plotly_chart(fig)
 
 
 def simulation_config():
@@ -49,14 +56,20 @@ def load_simulation(
             interarrival_time=interarrival_time,
         )
     )
-    env.run(until=10)
+    env.run(until=50)
 
 
 def welcome_message():
     text = """
     # Factory Simulation
 
-    Welcome to the simulation.
+    This interactive [Streamlit](https://streamlit.io/) web app uses the discrete event simulation framework [SimPy](https://simpy.readthedocs.io/en/latest/).
+    
+    The output of this simulation is similar to that produced by a [Manufacturing Execution System](https://en.wikipedia.org/wiki/Manufacturing_execution_system) (MES).
+    
+    An MES is foundational to smart manufacturing, allowing Industry 4.0 practitioners to monitor factory performance in real-time. Effective use of this data can reduce costs and improve performance to customer demand.
+    
+    Analysis of factory performance can be done with the MES-like data produced by this simulation, much as would be done with data produced by real factory automation.
     """
     return text
 
