@@ -25,7 +25,6 @@ def main():
         st.write(mes.current)
 
 
-@st.cache
 def simulation_config():
     load_simulation(
         interarrival_time_scale=2, lots_ready_at_time_zero=3, random_seed=42
@@ -34,7 +33,6 @@ def simulation_config():
     return mes
 
 
-@st.cache
 def load_simulation(
     interarrival_time_scale=2, lots_ready_at_time_zero=3, random_seed=42
 ):
