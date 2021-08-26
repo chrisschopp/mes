@@ -7,3 +7,7 @@ The output of this simulation is similar to that produced by a [Manufacturing Ex
 An MES is foundational to smart manufacturing, allowing Industry 4.0 practitioners to monitor factory performance in real-time. Effective use of this data can reduce costs and improve performance to customer demand.
 
 Analysis of factory performance can be done with the MES-like data produced by this simulation, much as would be done with data produced by real factory automation.
+
+👈 Navigate between pages using the sidebar.
+
+The code for this app can be viewed on [GitHub](https://github.com/chrisschopp/mes).
