@@ -10,18 +10,9 @@ from factory_simulation import *
 def main():
 
     with st.sidebar.form(key="my_form"):
-        st.sidebar.title("Navigation")
-        app_mode = st.sidebar.selectbox(
-            "Select a page to view",
-            [
-                "🌄 Introduction",
-                "📄 MES history",
-                "📄 MES current state",
-                "📊 Cycle time by step",
-            ],
-        )
+        st.sidebar.title("Simulation Parameters")
         use_default_params = st.sidebar.checkbox(
-            label="Use default factory parameters",
+            label="Use defaults",
             value=True,
             help="Deselect to set these parameters yourself.",
         )
@@ -38,17 +29,19 @@ def main():
             # Notify the reader that the data was successfully loaded.
             data_load_state.text("Running simulation...done.")
 
-    # Pages
-    if app_mode == "🌄 Introduction":
+    with st.expander("🌄 Introduction", expanded=True):
         welcome_message = st.markdown(get_file_content_as_string("welcome_message.md"))
-    elif app_mode == "📄 MES history":
+    with st.expander("📄 MES history"):
         st.title("MES History")
         st.write(
             """The **MES history** table contains a row for each step that a lot has finished. Note how there are no `NULL` values under `process_end_time`.
         \nThis table also contains various cycle time calculations."""
         )
-        st.write(mes.hist)
-    elif app_mode == "📄 MES current state":
+        try:
+            st.write(mes.hist)
+        except UnboundLocalError:
+            st.error("Run the simulation to continue.")
+    with st.expander("📄 MES current state"):
         st.title("MES Current State")
         st.write(
             """The **MES current** table contains the current state of lots in the factory.
@@ -60,26 +53,46 @@ def main():
         \nNote how this table always has at least one `NULL` value .
         """
         )
-        st.write(mes.current)
-    elif app_mode == "📊 Cycle time by step":
-        option = st.selectbox(
-            "Cycle time component:", ("Queue Time", "Process Time", "Step Cycle Time")
-        )
-        option_to_column = {
-            "Queue Time": "queue_time_hours",
-            "Process Time": "process_time_hours",
-            "Step Cycle Time": "step_cycle_time_hours",
-        }
-        fig = px.histogram(
-            mes.hist,
-            x=option_to_column[option],
-            y=option_to_column[option],
-            color="step_name",
-            marginal="box",  # or violin, rug
-            hover_data=mes.hist.columns,
-            title=f"{option} Distribution",
-        )
-        st.plotly_chart(fig)
+        try:
+            st.write(mes.current)
+        except UnboundLocalError:
+            st.error("Run the simulation to continue.")
+    with st.expander("📊 Cycle time by step"):
+        try:
+            fig = px.histogram(
+                mes.hist,
+                x="queue_time_hours",
+                y="queue_time_hours",
+                color="step_name",
+                marginal="box",  # or violin, rug
+                hover_data=mes.hist.columns,
+                title=f"Queue Time Distribution",
+            )
+            st.plotly_chart(fig)
+
+            fig = px.histogram(
+                mes.hist,
+                x="process_time_hours",
+                y="process_time_hours",
+                color="step_name",
+                marginal="box",  # or violin, rug
+                hover_data=mes.hist.columns,
+                title=f"Process Time Distribution",
+            )
+            st.plotly_chart(fig)
+
+            fig = px.histogram(
+                mes.hist,
+                x="step_cycle_time_hours",
+                y="step_cycle_time_hours",
+                color="step_name",
+                marginal="box",  # or violin, rug
+                hover_data=mes.hist.columns,
+                title=f"Step Cycle Time Distribution",
+            )
+            st.plotly_chart(fig)
+        except UnboundLocalError:
+            st.error("Run the simulation to continue.")
 
 
 def load_simulation(
