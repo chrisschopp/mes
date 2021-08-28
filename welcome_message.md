@@ -8,6 +8,4 @@ An MES is foundational to smart manufacturing, allowing Industry 4.0 practitione
 
 Analysis of factory performance can be done with the MES-like data produced by this simulation, much as would be done with data produced by real factory automation.
 
-👈 Navigate between pages using the sidebar.
-
 The code for this app can be viewed on [GitHub](https://github.com/chrisschopp/mes).
