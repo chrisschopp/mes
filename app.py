@@ -10,22 +10,14 @@ from factory_simulation import *
 def main():
 
     with st.sidebar.form(key="my_form"):
-        st.sidebar.title("Simulation Parameters")
-        use_default_params = st.sidebar.checkbox(
-            label="Use defaults",
-            value=True,
-            help="Deselect to set these parameters yourself.",
-        )
+        use_default_params = parameter_ui()
 
         submit_button = st.form_submit_button(label="Run simulation")
 
         if submit_button:
             # Create a text element and let the reader know the data is loading.
             data_load_state = st.text("Running simulation...")
-            if use_default_params:
-                mes = load_simulation()
-            else:
-                mes = load_simulation()
+            mes = load_simulation()
             # Notify the reader that the data was successfully loaded.
             data_load_state.text("Running simulation...done.")
 
@@ -50,7 +42,7 @@ def main():
         1. In queue to process at a step.
         2. Being processed at the step. 
 
-        \nNote how this table always has at least one `NULL` value .
+        \nNote how lots in this table have at least one `NULL` value .
         """
         )
         try:
@@ -93,6 +85,30 @@ def main():
             st.plotly_chart(fig)
         except UnboundLocalError:
             st.error("Run the simulation to continue.")
+
+
+def parameter_ui():
+    st.sidebar.title("Simulation Parameters")
+    use_default_params = st.sidebar.checkbox(
+        label="Use defaults",
+        value=True,
+        help="Deselect to set these parameters yourself.",
+    )
+
+    if not use_default_params:
+        interarrival_time_scale = st.sidebar.slider(
+            "Mean interarrival time (hours)",
+            min_value=0.0,
+            max_value=10.0,
+            value=2.0,
+            step=0.1,
+            help="""
+            Random arrivals can be modeled with an exponential distribution. In this case, we are assuming that arrivals to the factory (in the form of orders) are independent of one another.
+
+            The scale parameter, λ, for an exponential distribution is equal to both the mean and std dev.
+            """,
+        )
+    return use_default_params
 
 
 def load_simulation(
