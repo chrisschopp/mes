@@ -8,6 +8,7 @@ from factory_simulation import *
 
 
 def main():
+    st.set_page_config(page_title="Factory Simulation", page_icon="🏭", layout="wide")
 
     with st.sidebar.form(key="my_form"):
         use_default_params = parameter_ui()
@@ -103,9 +104,11 @@ def parameter_ui():
             value=2.0,
             step=0.1,
             help="""
+            How much time passes between arrivals, on average?
+
             Random arrivals can be modeled with an exponential distribution. In this case, we are assuming that arrivals to the factory (in the form of orders) are independent of one another.
 
-            The scale parameter, λ, for an exponential distribution is equal to both the mean and std dev.
+            The scale parameter (λ) for an exponential distribution is equal to both the mean and std dev.
             """,
         )
     return use_default_params
