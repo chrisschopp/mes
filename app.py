@@ -135,8 +135,7 @@ def load_simulation(
     )
     env.run(until=simulation_hours)
 
-    mes = create_mes_data(simulation_start_time=(2021, 1, 1))
-    return mes
+    return create_mes_data(simulation_start_time=(2021, 1, 1))
 
 
 @st.cache(show_spinner=False)
